@@ -2,7 +2,11 @@ import { Stack } from "expo-router";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import "../global.css";
 import { PermissionsProvider } from "../hooks/PermissionsContext";
+
 export default function RootLayout() {
+  
+
+
   return (
     <SafeAreaProvider>
       <SafeAreaView

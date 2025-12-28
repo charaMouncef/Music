@@ -2,7 +2,8 @@ import Entypo from "@expo/vector-icons/Entypo";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Tabs } from "expo-router";
-export default function RootLayout() {
+
+export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{

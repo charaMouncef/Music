@@ -16,7 +16,7 @@ export default function Index() {
           <Text className="text-[#FEB4A9] text-center font-bold text-4xl">
             Let's go
           </Text>
-          <Link href="/(tabs)/home" asChild>
+          <Link href="/second" asChild>
             <TouchableOpacity className="bg-[#FEB4A9] rounded-full p-2">
               <MaterialIcons
                 className="rotate-180"

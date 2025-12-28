@@ -44,6 +44,7 @@
     "tailwindcss": "^3.4.19"
   },
   "devDependencies": {
+    "@types/jsmediatags": "^3.9.6",
     "@types/react": "~19.1.0",
     "eas-cli": "^16.28.0",
     "eslint": "^9.25.0",
