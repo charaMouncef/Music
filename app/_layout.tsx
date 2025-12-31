@@ -1,7 +1,6 @@
 import { Stack } from "expo-router";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import "../global.css";
-import { PermissionsProvider } from "../hooks/PermissionsContext";
 
 export default function RootLayout() {
   
@@ -11,9 +10,9 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <SafeAreaView
         style={{ flex: 1, backgroundColor: "#1B100E" }}
-        edges={["top"]}
+        edges={["top","bottom"]}
       >
-        <PermissionsProvider>
+       
           <Stack
             screenOptions={{
               headerShown: false,
@@ -25,7 +24,7 @@ export default function RootLayout() {
             <Stack.Screen name="index" />
             <Stack.Screen name="(tabs)" />
           </Stack>
-        </PermissionsProvider>
+        
       </SafeAreaView>
     </SafeAreaProvider>
   );

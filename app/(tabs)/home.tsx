@@ -1,6 +1,7 @@
 import SongCard from "@/components/SongCard";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Text, TouchableOpacity, View } from "react-native";
+import { Link } from "expo-router";
 
 export default function Home() {
   return (
@@ -30,6 +31,7 @@ export default function Home() {
           <SongCard />
           <SongCard />
         </View>
+        <Link href="/" asChild>
         <TouchableOpacity className="bg-[#261817] flex-row items-center justify-around p-4 rounded-b-2xl">
           <Text className="text-xl text-white font-semibold">
             Check all of Daily Mix
@@ -41,6 +43,7 @@ export default function Home() {
             color="white"
           />
         </TouchableOpacity>
+        </Link>
       </View>
     </View>
   );

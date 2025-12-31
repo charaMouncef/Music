@@ -1,25 +1,79 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Link } from "expo-router";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Link, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { getPermissionStatus, initializeDatabase } from "../utils/DataBase";
+
 export default function Index() {
-  return (
-    <View className=" flex-1 py-12 bg-[#1B100E] ">
-      <Text className="text-white text-center font-bold text-4xl ">
+  const router = useRouter(); 
+  const [permissionsStatus, setPermissionsStatus] = useState({
+    media: null,
+    notifications: null,
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  // 1. Initialize DB and Check Permissions on Mount
+  useEffect(() => {
+    const setup = async () => {
+      // Initialize DB schema first
+      await initializeDatabase();
+
+      const mediaStatus = await getPermissionStatus("media");
+      const notificationsStatus = await getPermissionStatus("notifications");
+
+      setPermissionsStatus({
+        media: mediaStatus,
+        notifications: notificationsStatus,
+      });
+    };
+    setup();
+  }, []);
+
+  // 2. Separate Effect for Navigation based on state changes
+  useEffect(() => {
+    if (
+      permissionsStatus.media === "granted" &&
+      permissionsStatus.notifications === "granted"
+    ) {
+      // use replace so the user can't "Go Back" to the welcome screen
+      router.replace("/(tabs)/home");
+    }else{
+      setIsLoading(false);
+    }
+    
+  }, [permissionsStatus, router]);
+
+  return isLoading ? (
+    <View className="flex-1 justify-center items-center bg-[#1B100E]">
+      <ActivityIndicator size="large" color="#FEB4A9" />
+    </View>
+  ) : (
+    <View className="flex-1 py-12 bg-[#1B100E]">
+      <Text className="text-white text-center font-bold text-4xl">
         Welcome to PixelPlay
       </Text>
+
       <Image source={require("@/assets/images/bg.png")} className="w-full" />
-      <View className="p-6 ">
-        <Text className="text-white text-2xl font-bold ">
+
+      <View className="p-6">
+        <Text className="text-white text-2xl font-bold">
           Let's get everything set up for you
         </Text>
+
         <View className="mt-6 flex-row items-center justify-between">
           <Text className="text-[#FEB4A9] text-center font-bold text-4xl">
             Let's go
           </Text>
+
           <Link href="/second" asChild>
             <TouchableOpacity className="bg-[#FEB4A9] rounded-full p-2">
               <MaterialIcons
-                className="rotate-180"
+                style={{ transform: [{ rotate: "180deg" }] }} // Tailwind "rotate-180" can be finicky on icons
                 name="arrow-back"
                 size={32}
               />

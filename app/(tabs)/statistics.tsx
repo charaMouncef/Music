@@ -1,7 +1,8 @@
 import Tabs from "@/components/Tabs";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useState } from "react";
-import { Image, ScrollView, Text, View } from "react-native";
-
+import { ScrollView, Text, View } from "react-native";
 export default function Statistics() {
   const [activeTab, setActiveTab] = useState("Today");
   const List = [
@@ -9,34 +10,29 @@ export default function Statistics() {
       title: "song of rome",
       plays: 10,
       duration: "57 m",
-      image: require("@/assets/images/ivoxygen.png"),
     },
     {
       title: "keep your eyes peeled",
       plays: 8,
       duration: "45 m",
-      image: require("@/assets/images/ivoxygen.png"),
       artist: "Artist 2",
     },
     {
       title: "melancholy hill",
       plays: 5,
       duration: "30 m",
-      image: require("@/assets/images/ivoxygen.png"),
       artist: "Artist 3",
     },
     {
       title: "sunny days",
       plays: 3,
       duration: "20 m",
-      image: require("@/assets/images/ivoxygen.png"),
       artist: "Artist 4",
     },
     {
       title: "rainy nights",
       plays: 2,
       duration: "15 m",
-      image: require("@/assets/images/ivoxygen.png"),
       artist: "Artist 5",
     },
   ];
@@ -68,10 +64,13 @@ export default function Statistics() {
               className="flex-row items-center justify-between mt-4"
             >
               <View className="flex-row items-center">
-                <Image
-                  source={item.image}
-                  className="w-12 h-12 rounded-lg mr-4"
-                />
+                <View className="w-12 h-12 rounded-lg mr-4 bg-[#3E2E2C] flex items-center justify-center rounded-xl">
+                  <MaterialCommunityIcons
+                    name="face-man-profile"
+                    size={30}
+                    color="gray"
+                  />
+                </View>
                 <View>
                   <Text className="text-white text-lg font-medium">
                     {index + 1}. {item.title}
@@ -91,10 +90,9 @@ export default function Statistics() {
           </Text>
           {List.map((item, index) => (
             <View key={index} className="flex-row items-center mt-4  ">
-              <Image
-                source={item.image}
-                className="w-16 h-16 rounded-lg mr-4 "
-              />
+              <View className="w-16 h-16 rounded-lg mr-4 bg-[#3E2E2C] flex items-center justify-center rounded-xl">
+                <Ionicons size={40} name="musical-notes" color="gray" />
+              </View>
               <View className="flex-1 ">
                 <Text className="text-white text-lg font-medium">
                   {index + 1}. {item.title}

@@ -2,35 +2,44 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Link } from "expo-router";
 import { useEffect, useState } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
-import { usePermissions } from "../hooks/PermissionsContext";
+import {getPermissionStatus} from "../utils/DataBase";
 export default function Fourth() {
   const [errors, setErrors] = useState({ media: false, notifications: false });
+  const [permissionsStatus, setPermissionsStatus] = useState({ media: "", notifications: "" });
   const [isDisable, setIsDisable] = useState(true);
-  const { permissions } = usePermissions() as {
-    permissions: { media: string; notifications: string };
-  };
+  
   useEffect(() => {
+
+    const fetchPermissionsStatus = async () => {
+      const mediaStatus = await getPermissionStatus("media");
+      const notificationsStatus = await getPermissionStatus("notifications");
+      setPermissionsStatus({ media: mediaStatus, notifications: notificationsStatus });
+    }
+
+    fetchPermissionsStatus()
+
+
+
     const newErrors: any = { ...errors };
-    if (permissions.media !== "granted") {
+    if (permissionsStatus.media !== "granted") {
       newErrors.media = true;
     } else {
       newErrors.media = false;
     }
-    if (permissions.notifications !== "granted") {
+    if (permissionsStatus.notifications !== "granted") {
       newErrors.notifications = true;
     } else {
       newErrors.notifications = false;
     }
     setIsDisable(newErrors.media || newErrors.notifications);
     setErrors(newErrors);
-  }, [permissions]);
+  }, [permissionsStatus]);
 
   return (
     <View className="flex-1 py-8 bg-[#1B100E] justify-center">
       <Text className="text-white text-center font-bold text-4xl">
         {errors.media || errors.notifications ? "Almost There!" : "All Set!"}
       </Text>
-
       <Image
         source={require("@/assets/images/allGood.png")}
         className="h-[300px] w-full"

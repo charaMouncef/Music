@@ -1,29 +1,30 @@
+import { getAndStoreAudioFiles,changePermissionStatus } from "../utils/DataBase";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as MediaLibrary from "expo-media-library";
 import { Link } from "expo-router";
 import { Image, Text, TouchableOpacity, View } from "react-native";
-import { usePermissions } from "../hooks/PermissionsContext";
-export default function Second() {
-  const { setPermission } = usePermissions() as any;
 
+export default function Second() {
 
   const requestMediaPermission = async () => {
-    const { status: existingStatus } = await MediaLibrary.getPermissionsAsync();
-    let finalStatus = existingStatus;
-    // Ask if not granted
-    if (existingStatus !== "granted") {
-      const { status } = await MediaLibrary.requestPermissionsAsync();
-      finalStatus = status;
+    try {
+      const { status: existingStatus } =
+        await MediaLibrary.getPermissionsAsync();
+      let finalStatus = existingStatus;
+
+      // Request permission only if not already granted
+      if (existingStatus !== "granted") {
+        const { status } = await MediaLibrary.requestPermissionsAsync();
+        finalStatus = status;
+      }
+
+      if (finalStatus === "granted") {
+        await getAndStoreAudioFiles();
+      }
+      await changePermissionStatus("media", finalStatus);
+    } catch (error) {
+      console.log("Error requesting media permission:", error);
     }
-
-    if (finalStatus !== "granted") {
-      setPermission("media", finalStatus); // ✅ updates shared state
-
-      return false;
-    }
-    setPermission("media", finalStatus); // ✅ updates shared state
-
-    return true;
   };
 
   return (

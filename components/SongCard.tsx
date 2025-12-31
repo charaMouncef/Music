@@ -1,22 +1,37 @@
-import { Text, View, Image,TouchableOpacity } from "react-native";
-
-export default function SongCard({ title, image, artist, isRounded }: { title?: string; image?: any; artist?: string; isRounded?: boolean }) {
-  const truncate = (text:string, maxLength = 30) => {
-  if (!text) return "";
-  return text.length > maxLength
-    ? text.slice(0, maxLength) + "…"
-    : text;
-};
-
+import Entypo from "@expo/vector-icons/Entypo";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { Text, TouchableOpacity, View } from "react-native";
+export default function SongCard({
+  title,
+  isRounded,
+}: {
+  title?: string;
+  isRounded?: boolean;
+}) {
   return (
-    <TouchableOpacity className={`bg-[#281D1B] py-2 px-1 flex-row items-center ${isRounded ? 'rounded-xl' : ''}`}>
-      <Image
-      className="w-[60px] h-[60px] mr-4 rounded-lg"
-       source={image ? { uri: image } : require("@/assets/images/ivoxygen.png")}/>
-       <View>
-        <Text className="text-white text-lg font-medium">{title ? truncate(title) : 'unknown'}</Text>
-        <Text className="text-gray-400 text-md">{artist ? artist : 'unknown'}</Text>
-       </View>
-    </TouchableOpacity>     
+    <TouchableOpacity
+      className={`bg-[#281D1B] py-2 px-1 flex-row items-center justify-between ${isRounded ? "rounded-xl" : ""}`}
+    >
+      <View className="flex-row items-center flex-1">
+        <View className="w-[60px] h-[60px] bg-[#3E2E2C] flex items-center justify-center mr-4 ml-2 rounded-xl">
+          <Ionicons size={40} name="musical-notes" color="gray" />
+        </View>
+        <View className="overflow-hidden flex-1">
+          <Text
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            className="text-white text-lg font-medium"
+          >
+            {title ?? "unknown"}
+          </Text>
+          <Text className="text-gray-400 text-md">unknown artist</Text>
+        </View>
+      </View>
+      {isRounded && (
+        <TouchableOpacity className="p-2">
+          <Entypo name="dots-three-vertical" size={24} color="grey" />
+        </TouchableOpacity>
+      )}
+    </TouchableOpacity>
   );
 }

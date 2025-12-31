@@ -26,6 +26,7 @@
     "expo-notifications": "~0.32.15",
     "expo-router": "~6.0.21",
     "expo-splash-screen": "~31.0.13",
+    "expo-sqlite": "~16.0.10",
     "expo-status-bar": "~3.0.9",
     "expo-symbols": "~1.0.8",
     "expo-system-ui": "~6.0.9",
@@ -46,7 +47,6 @@
   "devDependencies": {
     "@types/jsmediatags": "^3.9.6",
     "@types/react": "~19.1.0",
-    "eas-cli": "^16.28.0",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
     "typescript": "~5.9.2"

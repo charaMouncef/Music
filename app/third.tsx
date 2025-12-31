@@ -2,32 +2,23 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Notifications from "expo-notifications";
 import { Link } from "expo-router";
 import { Image, Text, TouchableOpacity, View } from "react-native";
-import { usePermissions } from "../hooks/PermissionsContext";
-
+import { changePermissionStatus } from "../utils/DataBase";
 export default function Third() {
-  const { setPermission } = usePermissions() as any;
-
   const requestNotificationPermission = async () => {
-    // Check existing permission
-    const { status: existingStatus } =
-      await Notifications.getPermissionsAsync();
+    try {
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
 
-    let finalStatus = existingStatus;
-
-    // Ask if not granted
-    if (existingStatus !== "granted") {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
+      // Request permission only if not already granted
+      if (existingStatus !== "granted") {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      await changePermissionStatus("notifications", finalStatus);
+    } catch (error) {
+      console.log("Error requesting media permission:", error);
     }
-
-    if (finalStatus !== "granted") {
-      setPermission("notifications", finalStatus); // ✅ updates shared state
-
-      return false;
-    }
-    setPermission("notifications", finalStatus); // ✅ updates shared state
-
-    return true;
   };
 
   return (
