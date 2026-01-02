@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { getPermissionStatus, initializeDatabase } from "../utils/DataBase";
+import { getPermissionStatus, initializeDatabase, getAndStoreAudioFiles } from "../utils/DataBase";
 
 export default function Index() {
   const router = useRouter(); 
@@ -17,6 +17,7 @@ export default function Index() {
     notifications: null,
   });
   const [isLoading, setIsLoading] = useState(true);
+  
   // 1. Initialize DB and Check Permissions on Mount
   useEffect(() => {
     const setup = async () => {
@@ -30,23 +31,24 @@ export default function Index() {
         media: mediaStatus,
         notifications: notificationsStatus,
       });
+      
+      if (mediaStatus === "granted") {
+        // Fetch and save audio files to DB
+        await getAndStoreAudioFiles();
+      }
     };
     setup();
   }, []);
 
   // 2. Separate Effect for Navigation based on state changes
   useEffect(() => {
-    if (
-      permissionsStatus.media === "granted" &&
-      permissionsStatus.notifications === "granted"
-    ) {
-      // use replace so the user can't "Go Back" to the welcome screen
-      router.replace("/(tabs)/home");
+    if(permissionsStatus.notifications === "granted" && permissionsStatus.media === "granted"){
+      router.replace("/(tabs)/home")
     }else{
       setIsLoading(false);
     }
-    
   }, [permissionsStatus, router]);
+     
 
   return isLoading ? (
     <View className="flex-1 justify-center items-center bg-[#1B100E]">
@@ -73,7 +75,7 @@ export default function Index() {
           <Link href="/second" asChild>
             <TouchableOpacity className="bg-[#FEB4A9] rounded-full p-2">
               <MaterialIcons
-                style={{ transform: [{ rotate: "180deg" }] }} // Tailwind "rotate-180" can be finicky on icons
+                style={{ transform: [{ rotate: "180deg" }] }}
                 name="arrow-back"
                 size={32}
               />

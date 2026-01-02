@@ -16,7 +16,7 @@ type SortContextType = {
 const SortContext = createContext<SortContextType | undefined>(undefined);
 
 export function SortProvider({ children }: { children: ReactNode }) {
-  const [sortedBy, setSortedBy] = useState<SortType>("duration");
+  const [sortedBy, setSortedBy] = useState<SortType>("Date added");
   const [isOpenSelect, setIsOpenSelect] = useState(false);
 
   return (

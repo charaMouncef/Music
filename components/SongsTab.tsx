@@ -2,6 +2,7 @@ import SongCard from "@/components/SongCard";
 import { useSort } from "@/hooks/SortContext";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import { useSong } from "@/hooks/SongContext";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -17,14 +18,13 @@ interface Song {
   uri: string;
   duration: number;
   modificationTime: number;
-  folder: string;
   isFavorite: number;
 }
 
 export default function SongTabs() {
   const [songsList, setSongsList] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const { isPlaying } = useSong();
   const { sortedBy, setIsOpenSelect } = useSort();
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export default function SongTabs() {
       {loading ? (
         <ActivityIndicator size="large" color="#FEB4A9" className="mt-10" />
       ) : (
-        <View className="flex-1 bg-[#1B100E] rounded-2xl p-4">
+        <View className={`flex-1 bg-[#1B100E] rounded-2xl p-4 ${isPlaying ? "pb-16" : ""}`}>
           <View className="flex-row justify-between items-center mb-4">
             <TouchableOpacity className="bg-[#FEB4A9] px-4 py-2 rounded-full flex-row items-center gap-1">
               <FontAwesome6 name="shuffle" size={24} color="black" />
@@ -67,7 +67,15 @@ export default function SongTabs() {
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <View className="mb-2">
-                <SongCard title={item.title} isRounded={true} />
+                <SongCard 
+                  id={item.id}
+                  title={item.title}
+                  uri={item.uri}
+                  duration={item.duration}
+                  modificationTime={item.modificationTime}
+                  isFavorite={item.isFavorite}
+                  isRounded={true} 
+                />
               </View>
             )}
             ListEmptyComponent={

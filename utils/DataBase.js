@@ -19,7 +19,6 @@ export const initializeDatabase = async () => {
         uri TEXT UNIQUE,
         duration REAL,
         modificationTime INTEGER,
-        folder TEXT,
         isFavorite INTEGER DEFAULT 0
       );
 
@@ -28,10 +27,6 @@ export const initializeDatabase = async () => {
         name TEXT NOT NULL
       );
 
-      CREATE TABLE IF NOT EXISTS favorites (
-        songId TEXT PRIMARY KEY,
-        FOREIGN KEY (songId) REFERENCES songs(id) ON DELETE CASCADE
-      );
 
       CREATE TABLE IF NOT EXISTS recent_plays (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,6 +38,11 @@ export const initializeDatabase = async () => {
       CREATE TABLE IF NOT EXISTS permissions (
         type TEXT UNIQUE,
         status TEXT
+      );
+      CREATE TABLE IF NOT EXISTS search_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        query TEXT NOT NULL,
+        searchedAt DATETIME DEFAULT CURRENT_TIMESTAMP
       );
     `);
 
@@ -89,20 +89,25 @@ export const getAndStoreAudioFiles = async () => {
  * Uses a Transaction to batch insert audio files efficiently.
  */
 export const saveAudioFilesToDB = async (audioFiles) => {
+  // Guard clause: if no audioFiles provided, fetch them first
+  if (!audioFiles || !Array.isArray(audioFiles) || audioFiles.length === 0) {
+    console.log("No audio files provided, fetching from media library...");
+    await getAndStoreAudioFiles();
+    return;
+  }
+
   try {
     await db.withTransactionAsync(async () => {
       for (const file of audioFiles) {
-        // Included 'folder' and ensured types match the schema
         await db.runAsync(
-          `INSERT OR REPLACE INTO songs (id, title, uri, duration, modificationTime, folder) 
-           VALUES (?, ?, ?, ?, ?, ?);`,
+          `INSERT OR REPLACE INTO songs (id, title, uri, duration, modificationTime) 
+           VALUES (?, ?, ?, ?, ?);`,
           [
             file.id,
             file.filename,
             file.uri,
-            file.duration, // REAL type supports decimals
+            file.duration,
             file.modificationTime,
-            file.albumId || "Unknown", // Mapping albumId to folder column
           ]
         );
       }
@@ -110,7 +115,7 @@ export const saveAudioFilesToDB = async (audioFiles) => {
     console.log(`Successfully synced ${audioFiles.length} songs.`);
   } catch (error) {
     console.error("Error saving audio files to DB:", error);
-    throw error; // Propagate error so UI can handle it
+    throw error;
   }
 };
 
@@ -175,12 +180,73 @@ export const getAllAudioFilesFromDB = async (sortedBy = "Date added") => {
   }
 };
 
+export const getSongsInSearch = async (query) => {
+  try {
+    const songs = await db.getAllAsync(
+      `SELECT * FROM songs WHERE title LIKE ? ORDER BY modificationTime DESC;`,
+      [`%${query}%`]
+    );
+    return songs;
+  } catch (error) {
+    console.error("Error searching songs in DB:", error);
+    return [];
+  }
+};
+
+export const saveSearchQuery = async (query) => {
+  try {
+    await db.runAsync(`INSERT INTO search_history (query) VALUES (?);`, [
+      query,
+    ]);
+  } catch (error) {
+    console.error("Error saving search query:", error);
+  }
+};
+export const deleteSearchQuery = async (query) => {
+  try {
+    await db.runAsync(`DELETE FROM search_history WHERE query = ?;`, [query]);
+  } catch (error) {
+    console.error("Error deleting search query:", error);
+  }
+};
+export const deleteSearchHistory = async () => {
+  try {
+    await db.runAsync(`DELETE FROM search_history;`);
+  } catch (error) {
+    console.error("Error deleting search query:", error);
+  }
+};
+export const getSearchHistory = async () => {
+  try {
+    const history = await db.getAllAsync(
+      `SELECT * FROM search_history ORDER BY searchedAt DESC LIMIT 20;`
+    );
+    return history;
+  } catch (error) {
+    console.error("Error fetching search history:", error);
+    return [];
+  }
+};
+export const isFavoriteSong = async (songId) => {
+  try {
+    const result = await db.getFirstAsync(
+      `SELECT isFavorite FROM songs WHERE id = ?;`,
+      [songId]
+    );
+    return result ? result.isFavorite === 1 : false;
+  }
+  catch (error) {
+    console.error("Error checking favorite status:", error);
+    return false;
+  }
+}
 export const markSongAsFavorite = async (songId, isFavorite) => {
   try {
     await db.runAsync(`UPDATE songs SET isFavorite = ? WHERE id = ?;`, [
       isFavorite ? 1 : 0,
       songId,
     ]);
+    console.log(`Song ${songId} marked as favorite: ${isFavorite}`);
   } catch (error) {
     console.error("Error updating favorite status:", error);
   }

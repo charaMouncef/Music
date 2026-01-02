@@ -6,8 +6,12 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Tabs } from "expo-router";
 import { View } from "react-native";
+import StreamingTrackCard from "@/components/StreamingTrackCard";
+import {SongProvider} from "@/hooks/SongContext";
+
 export default function TabsLayout() {
   return (
+    <SongProvider>
     <SortProvider>
       <View style={{ flex: 1 }}>
         <Tabs
@@ -69,9 +73,11 @@ export default function TabsLayout() {
         </Tabs>
 
         {/* 👇 Now Playing Bar */}
-        <NowPlayingBar isPlaying={false} />
-        <SelectSortBy />
+        <NowPlayingBar />
+        <SelectSortBy/>
+        <StreamingTrackCard />
       </View>
     </SortProvider>
+    </SongProvider>
   );
 }

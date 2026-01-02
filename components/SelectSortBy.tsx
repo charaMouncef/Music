@@ -1,28 +1,127 @@
 import { SortType, useSort } from "@/hooks/SortContext";
-import { useRef } from "react";
-import { Pressable, Text, TouchableOpacity, View } from "react-native";
+import { useEffect, useRef } from "react";
+import {
+  Animated,
+  Easing,
+  PanResponder,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
 
 export default function SelectSortBy() {
   const { sortedBy, setSortedBy, isOpenSelect, setIsOpenSelect } = useSort();
   const sheetRef = useRef<View>(null);
+  
+  // Animation value for slide up
+  const slideAnim = useRef(new Animated.Value(0)).current;
+  // For drag gesture
+  const dragY = useRef(new Animated.Value(0)).current;
+  const lastDragY = useRef(0);
 
   const isSelected = (value: SortType) => sortedBy === value;
+
+  // Create PanResponder for drag gesture
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: () => {
+        dragY.setValue(0);
+        lastDragY.current = 0;
+      },
+      onPanResponderMove: (_, gestureState) => {
+        // Only allow dragging downward (positive Y)
+        if (gestureState.dy > 0) {
+          dragY.setValue(gestureState.dy);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        // If dragged more than 50px down, close the sheet
+        if (gestureState.dy > 50) {
+          handleClose();
+        } else {
+          // If not dragged enough, animate back to position
+          Animated.spring(dragY, {
+            toValue: 0,
+            useNativeDriver: true,
+            damping: 20,
+            stiffness: 90,
+          }).start();
+        }
+        lastDragY.current = 0;
+      },
+    })
+  ).current;
+
+  // Handle open/close animation
+  useEffect(() => {
+    if (isOpenSelect) {
+      // Reset drag position
+      dragY.setValue(0);
+      
+      // Start slide up animation
+      Animated.spring(slideAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        damping: 20,
+        stiffness: 90,
+      }).start();
+    } else {
+      // Reset animation when closed
+      slideAnim.setValue(0);
+    }
+  }, [isOpenSelect]);
+
+  // Combined transform - both the initial slide and drag gesture
+  const translateY = Animated.add(
+    slideAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [1000, 0],
+    }),
+    dragY
+  );
+
+  const handleClose = () => {
+    // Slide down animation when closing
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      duration: 300,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start(() => {
+      setIsOpenSelect(false);
+    });
+  };
 
   if (!isOpenSelect) return null;
 
   return (
-    <Pressable
-      className="absolute bottom-0 w-full h-full bg-gray-500/10 justify-end items-center transition duration-300"
-      onPress={() => setIsOpenSelect(false)} 
+    <Animated.View
+      className="absolute bottom-0 w-full h-full bg-gray-900/10 justify-end items-center"
+      style={{
+        transform: [{ translateY }],
+      }}
     >
-      
       <Pressable
+        className="absolute bottom-0 w-full h-full"
+        onPress={handleClose}
+      />
+      
+      <Animated.View
         ref={sheetRef}
-        className="w-full p-4 bg-[#352726] rounded-2xl pb-12"
-        onPress={() => {}}
+        className="w-full p-4 bg-[#352726] rounded-t-2xl pb-12"
+        
       >
-        {/* Drag handle */}
-        <View className="w-14 h-2 bg-white rounded-lg self-center mb-6" />
+        {/* Enhanced Drag handle with gesture support */}
+        <View className="items-center mb-6">
+          <View 
+            className="w-14 h-2 bg-white rounded-lg"
+            {...panResponder.panHandlers}
+          />
+          <Text className="text-white/60 text-xs mt-2">Drag down to close</Text>
+        </View>
 
         {/* Title */}
         <Text className="text-4xl text-left font-bold mb-4 text-white/50">
@@ -36,7 +135,7 @@ export default function SelectSortBy() {
           }`}
           onPress={() => {
             setSortedBy("title(A-Z)");
-            setIsOpenSelect(false);
+            handleClose();
           }}
         >
           <Text
@@ -63,7 +162,7 @@ export default function SelectSortBy() {
           }`}
           onPress={() => {
             setSortedBy("title(Z-A)");
-            setIsOpenSelect(false);
+            handleClose();
           }}
         >
           <Text
@@ -90,7 +189,7 @@ export default function SelectSortBy() {
           }`}
           onPress={() => {
             setSortedBy("Date added");
-            setIsOpenSelect(false);
+            handleClose();
           }}
         >
           <Text
@@ -117,7 +216,7 @@ export default function SelectSortBy() {
           }`}
           onPress={() => {
             setSortedBy("duration");
-            setIsOpenSelect(false);
+            handleClose();
           }}
         >
           <Text
@@ -136,7 +235,7 @@ export default function SelectSortBy() {
             />
           </View>
         </TouchableOpacity>
-      </Pressable>
-    </Pressable>
+      </Animated.View>
+    </Animated.View>
   );
 }
