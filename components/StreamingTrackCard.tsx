@@ -8,10 +8,13 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import Slider from "@react-native-community/slider";
 import { useEffect, useRef, useState } from "react";
 import { Animated, Easing, Text, TouchableOpacity, View, Dimensions, PanResponder } from "react-native";
-import { markSongAsFavorite,isFavoriteSong } from "@/utils/DataBase";
+import { markSongAsFavorite, isFavoriteSong } from "@/utils/DataBase";
+import AddToPlaylistModal from "./AddToPlaylistModal";
+
 export default function StreamingTrackCard() {
   const { isOpen, setIsOpen, isPlaying, setIsPlaying, currentSong } = useSong();
   const [liked, setLiked] = useState(false);
+  const [showPlaylistModal, setShowPlaylistModal] = useState(false);
 
   // 🔄 Animation values
   const spinValue = useRef(new Animated.Value(0)).current;
@@ -81,9 +84,6 @@ export default function StreamingTrackCard() {
     checkIfFavorite();
   }, [currentSong]);
 
-  // Handle like/unlike
-  
-
   // Handle open/close animation
   useEffect(() => {
     if (isOpen) {
@@ -132,126 +132,139 @@ export default function StreamingTrackCard() {
   };
 
   const handleClose = () => {
-  console.log('handleClose called');
-  
-  Animated.timing(slideAnim, {
-    toValue: 0,
-    duration: 300,
-    easing: Easing.out(Easing.ease),
-    useNativeDriver: true,
-  }).start(() => {
-    console.log('Animation completed, setting isOpen to false');
-    setIsOpen(false);
-  });
-};
+    console.log('handleClose called');
+    
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      duration: 300,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start(() => {
+      console.log('Animation completed, setting isOpen to false');
+      setIsOpen(false);
+    });
+  };
 
   if (!isOpen) return null;
 
   return (
-    <Animated.View 
-      className="absolute bottom-0 w-full h-full bg-[#7A3321] p-4 rounded-t-2xl"
-      style={{
-        transform: [{ translateY }],
-      }}
-    >
-      {/* Drag handle */}
-      <View className="items-center mb-4" {...panResponder.panHandlers}>
-        <View className="w-14 h-2 bg-white/70 rounded-lg mb-1" />
-        <Text className="text-white/60 text-xs">Drag down to close</Text>
-      </View>
-
-      {/* ⬅ Back */}
-      <TouchableOpacity onPress={()=>{
-        console.log('Back button pressed');
-        handleClose()}} className="mb-2">
-        <MaterialIcons name="arrow-back" size={30} color="white" />
-      </TouchableOpacity>
-
-      {/* 💿 Album Art */}
-      <Animated.Image
-        source={require("@/assets/images/record.png")}
-        className="w-[300px] h-[300px] self-center mt-6 mb-4"
+    <>
+      <Animated.View 
+        className="absolute bottom-0 w-full h-full bg-[#7A3321] p-4 rounded-t-2xl"
         style={{
-          transform: [{ rotate: spin }],
+          transform: [{ translateY }],
         }}
-      />
-
-      {/* 🎵 Track Info */}
-      <View className="flex-row justify-between items-center px-4 mb-6">
-        <View className="flex-1">
-          <Text
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            className="text-white font-semibold text-2xl"
-          >
-            {getTitleFormatted(currentSong?.title || "unknown")}
-          </Text>
-          <Text className="text-white">unknown artist</Text>
+      >
+        {/* Drag handle */}
+        <View className="items-center w-full mb-4" {...panResponder.panHandlers}>
+          <View className="w-14 h-2 bg-white/70 rounded-lg mb-1" />
+          <Text className="text-white/60 text-xs">Drag down to close</Text>
         </View>
 
-        <View className="flex-row gap-4">
-          <TouchableOpacity onPress={() => { setLiked(!liked); markSongAsFavorite(currentSong?.id || "", !liked); }}>
-            {liked ? (
-              <FontAwesome name="heart" size={24} color="#EBBBAF" />
+        {/* ⬅ Back */}
+        <TouchableOpacity onPress={() => {
+          console.log('Back button pressed');
+          handleClose();
+        }} className="mb-2">
+          <MaterialIcons name="arrow-back" size={30} color="white" />
+        </TouchableOpacity>
+
+        {/* 💿 Album Art */}
+        <Animated.Image
+          source={require("@/assets/images/record.png")}
+          className="w-[300px] h-[300px] self-center mt-6 mb-4"
+          style={{
+            transform: [{ rotate: spin }],
+          }}
+        />
+
+        {/* 🎵 Track Info */}
+        <View className="flex-row justify-between items-center px-4 mb-6">
+          <View className="flex-1">
+            <Text
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              className="text-white font-semibold text-2xl"
+            >
+              {getTitleFormatted(currentSong?.title || "unknown")}
+            </Text>
+            <Text className="text-white">unknown artist</Text>
+          </View>
+
+          <View className="flex-row gap-4">
+            <TouchableOpacity onPress={() => {
+              markSongAsFavorite(currentSong?.id || "", !liked);
+              setLiked(!liked);
+            }}>
+              {liked ? (
+                <FontAwesome name="heart" size={24} color="#EBBBAF" />
+              ) : (
+                <FontAwesome name="heart-o" size={24} color="#EBBBAF" />
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowPlaylistModal(true)}>
+              <Entypo name="plus" size={24} color="#EBBBAF" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* ⏱ Slider */}
+        <Slider
+          value={60}
+          minimumValue={0}
+          maximumValue={500}
+          minimumTrackTintColor="#FEB4A9"
+          maximumTrackTintColor="#222222"
+          thumbTintColor="#FEB4A9"
+          style={{ width: "100%", height: 4 }}
+        />
+
+        {/* ⌛ Time */}
+        <View className="flex-row justify-between px-4 mt-4">
+          <Text className="text-white font-semibold">0:0</Text>
+          <Text className="text-white font-semibold">
+            {formatTime(currentSong?.duration || 0) || "0:0"}
+          </Text>
+        </View>
+
+        {/* 🎮 Controls */}
+        <View className="flex-row justify-between items-center mt-10 px-8">
+          <TouchableOpacity>
+            <Entypo name="shuffle" size={30} color="#FEB4A9" />
+          </TouchableOpacity>
+
+          <TouchableOpacity>
+            <AntDesign name="step-backward" size={30} color="#FEB4A9" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => setIsPlaying(!isPlaying)}
+            className="bg-[#EBBBAF] flex justify-center items-center rounded-full py-2 px-6"
+          >
+            {isPlaying ? (
+              <Foundation name="pause" size={30} color="#7A3321" />
             ) : (
-              <FontAwesome name="heart-o" size={24} color="#EBBBAF" />
+              <Foundation name="play" size={30} color="#7A3321" />
             )}
           </TouchableOpacity>
+
           <TouchableOpacity>
-            <Entypo name="plus" size={24} color="#EBBBAF" />
+            <AntDesign name="step-forward" size={30} color="#FEB4A9" />
+          </TouchableOpacity>
+
+          <TouchableOpacity>
+            <FontAwesome6 name="repeat" size={30} color="#FEB4A9" />
           </TouchableOpacity>
         </View>
-      </View>
+      </Animated.View>
 
-      {/* ⏱ Slider */}
-      <Slider
-        value={60}
-        minimumValue={0}
-        maximumValue={500}
-        minimumTrackTintColor="#FEB4A9"
-        maximumTrackTintColor="#222222"
-        thumbTintColor="#FEB4A9"
-        style={{ width: "100%", height: 4 }}
+      <AddToPlaylistModal
+        visible={showPlaylistModal}
+        onClose={() => setShowPlaylistModal(false)}
+        songId={currentSong?.id || ""}
+        songTitle={getTitleFormatted(currentSong?.title || "unknown")}
       />
-
-      {/* ⌛ Time */}
-      <View className="flex-row justify-between px-4 mt-4">
-        <Text className="text-white font-semibold">0:0</Text>
-        <Text className="text-white font-semibold">
-          {formatTime(currentSong?.duration || 0) || "0:0"}
-        </Text>
-      </View>
-
-      {/* 🎮 Controls */}
-      <View className="flex-row justify-between items-center mt-10 px-8">
-        <TouchableOpacity>
-          <Entypo name="shuffle" size={30} color="#FEB4A9" />
-        </TouchableOpacity>
-
-        <TouchableOpacity>
-          <AntDesign name="step-backward" size={30} color="#FEB4A9" />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => setIsPlaying(!isPlaying)}
-          className="bg-[#EBBBAF] flex justify-center items-center rounded-full py-2 px-6"
-        >
-          {isPlaying ? (
-            <Foundation name="pause" size={30} color="#7A3321" />
-          ) : (
-            <Foundation name="play" size={30} color="#7A3321" />
-          )}
-        </TouchableOpacity>
-
-        <TouchableOpacity>
-          <AntDesign name="step-forward" size={30} color="#FEB4A9" />
-        </TouchableOpacity>
-
-        <TouchableOpacity>
-          <FontAwesome6 name="repeat" size={30} color="#FEB4A9" />
-        </TouchableOpacity>
-      </View>
-    </Animated.View>
+    </>
   );
 }
 

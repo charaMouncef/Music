@@ -1,16 +1,11 @@
 import SongTabs from "@/components/SongsTab";
+import Favorites from "@/components/Favorites";
+import Playlists from "@/components/PlayLists";
+import Folders from "@/components/Folders";
 import Tabs from "@/components/Tabs";
 import { useState } from "react";
 import { Text, View } from "react-native";
-interface Song {
-  id: string;
-  title: string;
-  uri: string;
-  duration: number;
-  modificationTime: number;
-  folder: string;
-  isFavorite: number;
-}
+
 
 export default function Songs() {
   const [activeTab, setActiveTab] = useState("Songs");
@@ -32,6 +27,9 @@ export default function Songs() {
       </View>
 
       {activeTab === "Songs" && <SongTabs />}
+      {activeTab === "Favorites" && <Favorites />}
+      {activeTab === "Playlists" && <Playlists />}
+      {activeTab === "Folders" && <Folders />}
     </View>
   );
 }

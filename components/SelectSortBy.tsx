@@ -99,7 +99,7 @@ export default function SelectSortBy() {
 
   return (
     <Animated.View
-      className="absolute bottom-0 w-full h-full bg-gray-900/10 justify-end items-center"
+      className="absolute bottom-0 w-full h-full bg-black/50 justify-end items-center"
       style={{
         transform: [{ translateY }],
       }}
@@ -115,10 +115,12 @@ export default function SelectSortBy() {
         
       >
         {/* Enhanced Drag handle with gesture support */}
-        <View className="items-center mb-6">
+        <View 
+        {...panResponder.panHandlers}
+        className="items-center w-full mb-6">
           <View 
             className="w-14 h-2 bg-white rounded-lg"
-            {...panResponder.panHandlers}
+            
           />
           <Text className="text-white/60 text-xs mt-2">Drag down to close</Text>
         </View>

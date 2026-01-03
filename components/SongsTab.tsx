@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { getAllAudioFilesFromDB } from "../utils/DataBase";
+import { getAllAudioFilesFromDB,shuffleAllSongs } from "../utils/DataBase";
 interface Song {
   id: string;
   title: string;
@@ -24,7 +24,7 @@ interface Song {
 export default function SongTabs() {
   const [songsList, setSongsList] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
-  const { isPlaying } = useSong();
+  const { isPlaying, playAllSongs } = useSong();
   const { sortedBy, setIsOpenSelect } = useSort();
 
   useEffect(() => {
@@ -42,14 +42,29 @@ export default function SongTabs() {
     fetchAudioFiles();
   }, [sortedBy]);
 
+    const handleShuffleAll = async () => {
+      try {
+        const allSongs = await shuffleAllSongs();
+        if (allSongs.length > 0) {
+          playAllSongs(allSongs, 0); // Play all songs starting from first
+        }
+      } catch (error) {
+        console.error("Error shuffling songs:", error);
+      }
+    };
+
   return (
     <View className="flex-1 mt-4">
       {loading ? (
         <ActivityIndicator size="large" color="#FEB4A9" className="mt-10" />
       ) : (
-        <View className={`flex-1 bg-[#1B100E] rounded-2xl p-4 ${isPlaying ? "pb-16" : ""}`}>
+        <View 
+        style={{paddingBottom: isPlaying ? 70 : 0}}
+        className={`flex-1 bg-[#1B100E] rounded-2xl p-4`}>
           <View className="flex-row justify-between items-center mb-4">
-            <TouchableOpacity className="bg-[#FEB4A9] px-4 py-2 rounded-full flex-row items-center gap-1">
+            <TouchableOpacity 
+            onPress={handleShuffleAll}
+            className="bg-[#FEB4A9] px-4 py-2 rounded-full flex-row items-center gap-1">
               <FontAwesome6 name="shuffle" size={24} color="black" />
               <Text className="text-[#1B100E] font-semibold text-xl">
                 Shuffle
